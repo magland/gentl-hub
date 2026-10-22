@@ -19,7 +19,7 @@ const store = {
 
 function verdict(r) {
 	if (r.verdict === 1) return { cls: "ok", text: "success" };
-	if (r.verdict === 0) return { cls: "bad", text: "failure" };
+	if (r.verdict === 0) return { cls: "bad", text: r.stop_reason === "aborted" ? "failure (aborted)" : "failure" };
 	return { cls: "warn", text: r.stop_reason === "finish" ? "not evaluated" : `did not finish (${r.stop_reason ?? "?"})` };
 }
 
