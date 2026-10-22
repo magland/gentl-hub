@@ -7,10 +7,10 @@ The public hub is at https://gentl-hub.jeremy-magland.workers.dev.
 gentl and the hub share only two formats: the task text, which the hub serves at `GET /api/tasks/<id>`, and the run directory (format 1), which gentl uploads. A participant copies the command from a task's page, for example
 
 ```
-gentl run https://<hub>/tasks/42 --upload
+gentl run https://<hub>/tasks/42 --backend claude-code --upload
 ```
 
-gentl shows the task and asks before running it, always clones the published repo (never a local copy), and uploads the run when it finishes. Uploads, new tasks and deletions need the hub's shared passcode; reading is public.
+With `--backend claude-code` the model calls go through the participant's Claude Code login, so no API key is needed. gentl shows the task and asks before running it, always clones the published repo (never a local copy), and uploads the run when it finishes. Uploads, new tasks and deletions need the hub's shared passcode; reading is public.
 
 ## Development
 
