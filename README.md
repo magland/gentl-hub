@@ -2,6 +2,8 @@
 
 A web hub for [gentl](https://github.com/magland/gentl), the readability test for codebases. It holds tasks (a title and plain text), shows the command to run each one, and collects the runs people upload, with per-model results, the evaluator's verdict and friction report, and a turn-by-turn viewer.
 
+The public hub is at https://gentl-hub.jeremy-magland.workers.dev.
+
 gentl and the hub share only two formats: the task text, which the hub serves at `GET /api/tasks/<id>`, and the run directory (format 1), which gentl uploads. A participant copies the command from a task's page, for example
 
 ```
