@@ -13,8 +13,7 @@
 		{
 			"binding": "DB",
 			"database_name": "gentl-hub-db",
-			// Placeholder until the database is created with `wrangler d1 create gentl-hub-db`; local dev ignores it.
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "8931f04d-686e-4960-8114-257c9ceac94c",
 			"migrations_dir": "migrations"
 		}
 	]
