@@ -378,6 +378,8 @@ function actionBlock(a) {
 	const label = (s) => `<div class="block-label">${s}</div>`;
 	if (!a) return "";
 	if (a.type === "run") return `<div class="block">${label(`Action: run${a.max_chars ? ` (max_chars ${a.max_chars})` : ""}`)}<pre>${esc(a.cmd)}</pre></div>`;
+	if (a.type === "read_file")
+		return `<div class="block">${label(`Action: read_file <code>${esc(a.path)}</code>${a.start_line != null || a.end_line != null ? ` lines ${a.start_line ?? 1}-${a.end_line ?? "end"}` : ""}`)}</div>`;
 	if (a.type === "write_file")
 		return `<div class="block">${label(`Action: write_file <code>${esc(a.path)}</code>`)}<pre class="scroll">${esc(a.content)}</pre></div>`;
 	if (a.type === "edit_file")
