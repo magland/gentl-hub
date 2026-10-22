@@ -130,11 +130,12 @@ function byModelTable(rows) {
 	const iqr = (r) => (r.read_q1 == null ? "-" : `${n(r.read_q1)}-${n(r.read_q3)}`);
 	return `<div class="table-wrap"><table>
 		<thead><tr><th>Model</th><th>Backend</th><th class="num">Runs</th><th class="num">Successes</th>
-			<th class="num">Read tokens, median</th><th class="num">IQR</th><th class="num">Fewest</th><th class="num">Turns, median</th></tr></thead>
+			<th class="num">Read tokens, median</th><th class="num">IQR</th><th class="num">Fewest</th>
+			<th class="num" title="the most the agent carried in its notes at once">Notes max, median</th><th class="num">Turns, median</th></tr></thead>
 		<tbody>${rows.map((r) => `<tr><td class="nowrap">${esc(r.model)}</td><td>${esc(r.backend ?? "")}</td>
 			<td class="num">${r.runs}</td><td class="num">${r.successes}</td>
 			<td class="num"><strong>${n(r.read_median)}</strong></td><td class="num">${iqr(r)}</td>
-			<td class="num">${n(r.read_min)}</td><td class="num">${n(r.turns_median)}</td></tr>`).join("")}</tbody>
+			<td class="num">${n(r.read_min)}</td><td class="num"><strong>${n(r.notes_max_median)}</strong></td><td class="num">${n(r.turns_median)}</td></tr>`).join("")}</tbody>
 	</table></div>`;
 }
 
@@ -228,7 +229,7 @@ function runsTable(runs, showTask) {
 			<td class="nowrap"><span class="${v.cls}">${v.text}</span></td>
 			<td class="num">${r.turns}</td>
 			<td class="num"><strong>${n(r.read_tokens_total)}</strong></td>
-			<td class="num">${n(r.notes_tokens_max)}</td>
+			<td class="num"><strong>${n(r.notes_tokens_max)}</strong></td>
 			<td class="num">${n(r.result_tokens_max)}</td>
 			<td class="num">$${Number(r.cost_usd).toFixed(4)}</td>
 		</tr>`;
@@ -317,7 +318,8 @@ function stats(r, s) {
 		s.notes_reminders ? `${s.notes_reminders} notes reminder${s.notes_reminders > 1 ? "s" : ""}` : ""].filter(Boolean).join(", ");
 	return `<div class="stats">
 		${box("Read tokens", n(r.read_tokens_total), "notes + results")}
-		${box("Notes tokens", n(r.notes_tokens_total), `max ${n(r.notes_tokens_max)}`)}
+		${box("Notes max", n(r.notes_tokens_max), "the most the agent carried at once")}
+		${box("Notes tokens", n(r.notes_tokens_total), "summed over turns")}
 		${box("Result tokens", n(r.result_tokens_total), `max ${n(r.result_tokens_max)}`)}
 		${box("Turns", r.turns, extras)}
 		${box("Overhead", n(r.overhead_tokens), "system prompt + task, once")}

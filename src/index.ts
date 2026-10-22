@@ -57,7 +57,7 @@ function quantile(sorted: number[], q: number): number {
 	return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
 }
 
-type RunRow = { model: string; backend: string | null; verdict: number | null; read_tokens_total: number; turns: number };
+type RunRow = { model: string; backend: string | null; verdict: number | null; read_tokens_total: number; notes_tokens_max: number; turns: number };
 
 // Per model and backend: runs, evaluator-judged successes, and read tokens over the successful runs.
 function byModel(runs: RunRow[]) {
@@ -70,6 +70,7 @@ function byModel(runs: RunRow[]) {
 		const ok = rs.filter((r) => r.verdict === 1);
 		const reads = ok.map((r) => r.read_tokens_total).sort((a, b) => a - b);
 		const turns = ok.map((r) => r.turns).sort((a, b) => a - b);
+		const notesMax = ok.map((r) => r.notes_tokens_max).sort((a, b) => a - b);
 		return {
 			model: rs[0].model, backend: rs[0].backend, runs: rs.length, successes: ok.length,
 			read_median: reads.length ? quantile(reads, 0.5) : null,
@@ -77,6 +78,7 @@ function byModel(runs: RunRow[]) {
 			read_q3: reads.length ? quantile(reads, 0.75) : null,
 			read_min: reads.length ? reads[0] : null,
 			turns_median: turns.length ? quantile(turns, 0.5) : null,
+			notes_max_median: notesMax.length ? quantile(notesMax, 0.5) : null,
 		};
 	}).sort((a, b) => b.runs - a.runs);
 }
