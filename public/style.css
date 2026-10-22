@@ -79,8 +79,24 @@ details.sys summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 	font-size: 12px; padding: 6px 8px; border-radius: 6px; white-space: nowrap; }
 
 /* turns */
-.turn { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0 0 12px; scroll-margin-top: 16px; }
+.turn { border: 1px solid var(--line); border-radius: 8px; margin: 0 0 4px; scroll-margin-top: 16px; }
 .turn:target { border-color: var(--link); }
+details.turn > summary { display: flex; gap: 10px; align-items: baseline; padding: 5px 12px; cursor: pointer; list-style: none; }
+details.turn > summary::-webkit-details-marker { display: none; }
+details.turn > summary::before { content: "\25B8"; color: var(--muted); flex: none; transition: transform 0.1s; }
+details.turn[open] > summary::before { transform: rotate(90deg); }
+details.turn > summary:hover { background: var(--row); }
+details.turn[open] > summary { border-bottom: 1px solid var(--line); }
+details.turn .tn { flex: none; min-width: 2.2em; color: var(--muted); font-variant-numeric: tabular-nums; }
+details.turn .act { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+details.turn .act code { font-size: 13px; }
+details.turn .hint { flex: none; font-size: 13px; }
+details.turn .read { flex: none; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.turn-body { padding: 4px 14px 12px; }
+.turns-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.turns-head h2 { margin-right: 4px; }
+.small-btn { padding: 3px 10px; font-size: 13px; }
+@media (max-width: 600px) { details.turn .read { display: none; } }
 .turn-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; align-items: baseline; }
 .turn-head h3 { margin: 0; font-size: 15px; }
 .turn-head .read { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }

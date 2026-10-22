@@ -297,11 +297,17 @@ async function showRun(id) {
 		${s.system_prompt ? `<details class="sys"><summary>System prompt</summary><pre>${esc(s.system_prompt)}</pre></details>` : ""}
 		<h2>Tokens read per turn</h2>
 		${chart(turns)}
-		<h2>Turns</h2>
+		<div class="turns-head"><h2>Turns</h2><span class="muted small">click a turn for its notes, action and result</span>
+			<button type="button" class="secondary small-btn" id="turns-open">Expand all</button>
+			<button type="button" class="secondary small-btn" id="turns-close">Collapse all</button></div>
 		${turns.map((t, i) => turnCard(t, turns[i + 1], cumulative(turns, i))).join("")}`;
 	bindChart(turns);
 	bindDelete(`/api/runs/${r.id}`, `Delete run ${r.id}? This cannot be undone.`, `/tasks/${r.task_id}`);
-	if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
+	const setAll = (open) => document.querySelectorAll("details.turn").forEach((d) => { d.open = open; });
+	document.getElementById("turns-open").addEventListener("click", () => setAll(true));
+	document.getElementById("turns-close").addEventListener("click", () => setAll(false));
+	if (/^#turn-\d+$/.test(location.hash)) openTurn(location.hash.slice(1), false);
+	else if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
 }
 
 function stats(r, s) {
@@ -369,7 +375,7 @@ function bindChart(turns) {
 		bar.addEventListener("mouseleave", () => { tooltip.hidden = true; });
 		bar.addEventListener("click", () => {
 			history.replaceState(null, "", `#turn-${t.turn}`);
-			document.getElementById(`turn-${t.turn}`)?.scrollIntoView({ behavior: "smooth" });
+			openTurn(`turn-${t.turn}`, true);
 		});
 	});
 }
@@ -395,17 +401,53 @@ function actionBlock(a) {
 	return `<div class="block">${label("Action (unrecognized)")}<pre>${esc(JSON.stringify(a, null, 2))}</pre></div>`;
 }
 
+const shortPath = (p) => String(p ?? "").replace(/^.*?\/work\//, "");
+
+/** One line for a turn's action, shown while the turn is collapsed. */
+function actionSummary(a, t) {
+	if (t.parse_error) return '<span class="bad">parse error</span>';
+	if (!a) return '<span class="muted">(no action)</span>';
+	const range = a.start_line != null || a.end_line != null ? ` ${a.start_line ?? 1}-${a.end_line ?? "end"}` : "";
+	switch (a.type) {
+		// The usual leading "cd <workdir>/<repo> &&" says little; the full command is in the opened turn.
+		case "run": return `<code>${esc(firstLine(String(a.cmd).replace(/^cd\s+\S+\s*(&&|;)\s*/, ""), 200))}</code>`;
+		case "read_file": return `read_file <code>${esc(shortPath(a.path))}</code>${range}`;
+		case "write_file": case "edit_file": return `${a.type} <code>${esc(shortPath(a.path))}</code>`;
+		case "ask": return `ask: ${esc(firstLine(a.question, 200))}`;
+		case "finish": return `finish: <span class="${a.success ? "ok" : "bad"}">${a.success ? "success" : "failure"}</span> (self-reported)`;
+		default: return esc(a.type ?? "?");
+	}
+}
+
+/** What the result's first line says: exit code, an error, output cut, a repeated action. */
+function resultHint(t) {
+	const r = t.result_shown;
+	if (r == null) return "";
+	const hints = [];
+	if (/already ran this exact/.test(r)) hints.push('<span class="warn">repeat</span>');
+	const status = r.split("\n").find((l) => !l.startsWith("note:")) ?? "";
+	const m = status.match(/^exit code (\d+)/);
+	if (m) hints.push(m[1] === "0" ? '<span class="muted">exit 0</span>' : `<span class="bad">exit ${m[1]}</span>`);
+	else if (/^error/.test(status)) hints.push('<span class="bad">error</span>');
+	else if (/^(timed out|killed|stopped)/.test(status)) hints.push(`<span class="bad">${esc(status.split(" ").slice(0, 2).join(" "))}</span>`);
+	if (/output cut in the middle|chars, \d+ lines omitted/.test(r)) hints.push('<span class="muted">cut</span>');
+	return hints.join(" ");
+}
+
 function turnCard(t, next, cum) {
 	const a = t.action_json ? JSON.parse(t.action_json) : null;
 	const ops = t.notes_ops ? JSON.parse(t.notes_ops) : [];
-	const truncated = t.result_shown && /\[\.\.\. \d+ chars, \d+ lines omitted/.test(t.result_shown);
+	const truncated = t.result_shown && /output cut in the middle|\[\.\.\. \d+ chars, \d+ lines omitted/.test(t.result_shown);
 	const resultNote = [
 		next ? `read on turn ${next.turn}` : "",
-		truncated ? `truncated; full result ${n(t.result_full_chars)} chars` : "",
+		truncated ? `cut; full result ${n(t.result_full_chars)} chars` : "",
 	].filter(Boolean).join("; ");
-	return `<section class="turn" id="turn-${t.turn}">
-		<div class="turn-head"><h3><a href="#turn-${t.turn}">Turn ${t.turn}</a></h3>
-			<span class="read">read: notes ${n(t.notes_tokens)} + result ${n(t.result_tokens)} (cumulative ${n(cum)})${t.notes_reminder ? "; notes reminder sent" : ""}</span></div>
+	return `<details class="turn" id="turn-${t.turn}">
+		<summary><span class="tn">${t.turn}</span><span class="act">${actionSummary(a, t)}</span>
+			<span class="hint">${resultHint(t)}</span>
+			<span class="read" title="read this turn: notes + result (cumulative)">${n(t.notes_tokens)} + ${n(t.result_tokens)} (${n(cum)})</span></summary>
+		<div class="turn-body">
+		${t.notes_reminder ? '<p class="muted small">A notes reminder was sent this turn.</p>' : ""}
 		${t.parse_error ? `<div class="block"><div class="block-label bad">Parse error: ${esc(t.parse_error)}</div>
 			<pre class="scroll">${esc(t.raw_response)}</pre></div>` : ""}
 		${t.notes != null ? `<div class="block"><div class="block-label">Notes after this turn <span class="note">(${ops.length ? esc(ops.join(", ")) : "kept"})</span></div><pre>${esc(t.notes || "(empty)")}</pre></div>` : ""}
@@ -413,7 +455,16 @@ function turnCard(t, next, cum) {
 		${t.result_shown != null ? `<div class="block"><div class="block-label">Result
 			${resultNote ? `<span class="note">(${resultNote})</span>` : ""}</div>
 			<pre class="scroll">${esc(t.result_shown)}</pre></div>` : ""}
-	</section>`;
+		</div>
+	</details>`;
+}
+
+/** Open one turn and bring it into view. */
+function openTurn(id, smooth) {
+	const el = document.getElementById(id);
+	if (!el) return;
+	el.open = true;
+	el.scrollIntoView(smooth ? { behavior: "smooth" } : undefined);
 }
 
 route();
