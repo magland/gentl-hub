@@ -4,7 +4,7 @@ A web hub for [gentl](https://github.com/magland/gentl), the readability test fo
 
 The public hub is at https://gentl-hub.jeremy-magland.workers.dev.
 
-gentl and the hub share only two formats: the task text, which the hub serves at `GET /api/tasks/<id>`, and the run directory (format 1), which gentl uploads. A participant copies the command from a task's page, for example
+gentl and the hub share only two formats: the task text, which the hub serves at `GET /api/tasks/<id>`, and the run directory (format 1), which gentl uploads. A participant installs gentl (`npm install -g @magland/gentl`) and copies the command from a task's page, for example
 
 ```
 gentl run https://<hub>/tasks/42 --backend claude-code --upload

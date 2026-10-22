@@ -155,7 +155,7 @@ async function showTask(id) {
 		<div class="meta"><span>Task <b>${task.id}</b></span><span>Created by <b>${esc(task.created_by)}</b></span><span>Created <b>${date(task.created_at)}</b></span></div>
 		<p class="task-text">${esc(task.text)}</p>
 		<h2>Run this task</h2>
-		<p class="muted small">Needs <a href="https://github.com/magland/gentl">gentl</a>, Docker, and <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, logged in: with <code>--backend claude-code</code> the model calls go through your Claude Code login, so no API key is needed (to use an OpenRouter key in <code>OPENROUTER_API_KEY</code> instead, leave that option out). gentl shows the task and asks before running it, clones the published repo, and uploads the run here when it finishes; the first upload asks for your name and the hub's passcode.</p>
+		<p class="muted small">Needs <a href="https://github.com/magland/gentl">gentl</a> (<code>npm install -g @magland/gentl</code>, Node 20 or later), Docker, and <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, logged in: with <code>--backend claude-code</code> the model calls go through your Claude Code login, so no API key is needed (to use an OpenRouter key in <code>OPENROUTER_API_KEY</code> instead, leave that option out). gentl shows the task and asks before running it, clones the published repo, and uploads the run here when it finishes; the first upload asks for your name and the hub's passcode.</p>
 		<div class="cmd"><pre id="cmd">${esc(command)}</pre><button id="copy" type="button">Copy</button></div>
 		<h2>Results by model</h2>
 		${by_model.length ? byModelTable(by_model) : '<p class="muted">No runs yet.</p>'}
